@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Profile · SafeRoute Pune</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body style="min-height:100vh;overflow-y:auto">
+
+<!-- Nav -->
+<nav class="dash-nav" style="position:sticky;top:0;z-index:50">
+  <a href="dashboard.html" class="dash-brand">
+    <i class="fas fa-shield-halved shield"></i>SafeRoute<span class="accent">Pune</span>
+  </a>
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <a href="dashboard.html" class="btn btn-ghost btn-sm"><i class="fas fa-map"></i> Back to map</a>
+    <button class="btn btn-outline btn-sm" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Sign out</button>
+  </div>
+</nav>
+
+<div class="profile-page" style="padding-top:2rem">
+
+  <!-- Header -->
+  <div class="profile-header">
+    <div class="profile-avatar" id="avatarEl">—</div>
+    <div class="profile-info">
+      <h2 id="profileName">Loading…</h2>
+      <p id="profileEmail" style="color:var(--muted-2);font-size:.88rem"></p>
+      <p id="profileJoined" style="color:var(--muted);font-size:.78rem;margin-top:.2rem"></p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card card">
+      <div class="val" id="statJourneys">—</div>
+      <div class="lbl">Total journeys</div>
+    </div>
+    <div class="stat-card card">
+      <div class="val" id="statAvgScore" style="color:var(--emerald)">—</div>
+      <div class="lbl">Avg safety score</div>
+    </div>
+    <div class="stat-card card">
+      <div class="val" id="statKm">—</div>
+      <div class="lbl">km travelled</div>
+    </div>
+    <div class="stat-card card">
+      <div class="val" id="statFeedback">—</div>
+      <div class="lbl">Feedback given</div>
+    </div>
+  </div>
+
+  <!-- Journey history -->
+  <div class="card" style="margin-bottom:2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <h3 class="display" style="color:#fff;font-size:1.1rem"><i class="fas fa-clock-rotate-left" style="color:var(--blue);margin-right:.5rem"></i>Journey history</h3>
+      <span style="font-size:.78rem;color:var(--muted)">Last 50 journeys</span>
+    </div>
+
+    <div id="historyContent">
+      <div class="placeholder-state">
+        <div class="ph-icon"><i class="fas fa-circle-notch fa-spin"></i></div>
+        Loading journeys…
+      </div>
+    </div>
+  </div>
+
+  <!-- Safety contribution -->
+  <div class="card" style="margin-bottom:3rem">
+    <h3 class="display" style="color:#fff;font-size:1.1rem;margin-bottom:.75rem">
+      <i class="fas fa-users" style="color:var(--emerald);margin-right:.5rem"></i>Your safety contribution
+    </h3>
+    <p style="font-size:.88rem;color:var(--muted-2);line-height:1.7">
+      Every piece of feedback you submit trains the safety model for all Pune users. Negative safety reports lower scores in dangerous areas; positive reports reinforce safe corridors. Together, we make Pune's roads safer.
+    </p>
+    <div style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap">
+      <a href="dashboard.html" class="btn btn-emerald btn-sm"><i class="fas fa-map-location-dot"></i> Start a new journey</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const token = localStorage.getItem('sr_token');
+const user  = JSON.parse(localStorage.getItem('sr_user') || 'null');
+
+if (!token || !user) window.location.href = 'login.html';
+
+function logout() {
+  localStorage.removeItem('sr_token');
+  localStorage.removeItem('sr_user');
+  window.location.href = 'index.html';
+}
+
+function toast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+function scoreColor(s) {
+  if (s >= 70) return '#10b981';
+  if (s >= 50) return '#f59e0b';
+  if (s >= 30) return '#f97316';
+  return '#ef4444';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderStars(n) {
+  if (!n) return '<span style="color:var(--muted)">No rating</span>';
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+async function loadProfile() {
+  // Set basic info
+  const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('avatarEl').textContent   = initials;
+  document.getElementById('profileName').textContent = user.name;
+  document.getElementById('profileEmail').textContent = user.email;
+
+  try {
+    const [meRes, journeysRes] = await Promise.all([
+      fetch('/api/auth/me', { headers:{ 'Authorization': `Bearer ${token}` } }),
+      fetch('/api/journeys/my', { headers:{ 'Authorization': `Bearer ${token}` } })
+    ]);
+    const meData = await meRes.json();
+    const jData  = await journeysRes.json();
+
+    if (meData.user && meData.user.created_at)
+      document.getElementById('profileJoined').textContent = 'Member since ' + formatDate(meData.user.created_at);
+
+    const journeys = jData.journeys || [];
+
+    // Stats
+    document.getElementById('statJourneys').textContent = journeys.length;
+    const withScore = journeys.filter(j => j.safety_score);
+    const avgScore  = withScore.length
+      ? Math.round(withScore.reduce((a,j)=>a+j.safety_score,0)/withScore.length)
+      : '—';
+    document.getElementById('statAvgScore').textContent = avgScore;
+    const totalKm = journeys.reduce((a,j)=>a+(j.distance_m||0),0)/1000;
+    document.getElementById('statKm').textContent = totalKm.toFixed(1);
+    document.getElementById('statFeedback').textContent = journeys.filter(j=>j.overall_rating).length;
+
+    // History table
+    if (!journeys.length) {
+      document.getElementById('historyContent').innerHTML = `
+        <div class="placeholder-state">
+          <div class="ph-icon"><i class="fas fa-route"></i></div>
+          No journeys yet. <a href="dashboard.html" style="color:var(--blue)">Plan your first safe route →</a>
+        </div>`;
+      return;
+    }
+
+    let rows = journeys.map(j => `
+      <tr>
+        <td style="color:var(--text)">${j.origin || '—'}</td>
+        <td style="color:var(--text)">${j.destination || '—'}</td>
+        <td><span class="rt-chip rt-${j.route_type}">${j.route_type}</span></td>
+        <td><span style="color:${scoreColor(j.safety_score||0)};font-weight:600">${j.safety_score ? Math.round(j.safety_score) : '—'}</span></td>
+        <td>${j.distance_m ? (j.distance_m/1000).toFixed(1)+' km' : '—'}</td>
+        <td style="color:var(--amber)">${renderStars(j.overall_rating)}</td>
+        <td style="color:var(--muted);font-size:.78rem">${formatDate(j.started_at)}</td>
+      </tr>`).join('');
+
+    document.getElementById('historyContent').innerHTML = `
+      <div style="overflow-x:auto">
+        <table class="history-table">
+          <thead><tr>
+            <th>From</th><th>To</th><th>Mode</th><th>Safety</th><th>Distance</th><th>Rating</th><th>Date</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+  } catch(e) {
+    toast('Could not load profile data: ' + e.message, 'error');
+    document.getElementById('historyContent').innerHTML = `<div class="placeholder-state">Failed to load. <a href="#" onclick="loadProfile()" style="color:var(--blue)">Retry</a></div>`;
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

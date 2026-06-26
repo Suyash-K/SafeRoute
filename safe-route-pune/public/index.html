@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SafeRoute Pune — Navigate with Confidence</title>
+  <meta name="description" content="AI-powered safe route navigation for Pune. Avoid crime hotspots, accident-prone roads and poorly-lit areas — all in real time.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-brand">
+    <i class="fas fa-shield-halved shield"></i>
+    SafeRoute<span class="accent">Pune</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#data">Safety data</a>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-outline btn-sm">Sign in</a>
+    <a href="login.html?mode=register" class="btn btn-primary btn-sm">Get started</a>
+  </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────────── -->
+<section style="padding-top:0">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">🛡️ Powered by Pune crime &amp; accident data</div>
+      <h1>Navigate Pune<br><span class="gradient">safely &amp; smartly.</span></h1>
+      <p class="hero-sub">Real-time safety routing trained on Maharashtra traffic records, NCRB crime statistics, and live crowd-sourced reports — so every journey is informed.</p>
+      <div class="hero-actions">
+        <a href="login.html?mode=register" class="btn btn-primary btn-lg">
+          <i class="fas fa-map-location-dot"></i> Start navigating safely
+        </a>
+        <a href="#how-it-works" class="btn btn-ghost btn-lg">
+          <i class="fas fa-circle-play"></i> How it works
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-value display">34</div>
+          <div class="stat-label">Safety zones mapped</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value display">7 000+</div>
+          <div class="stat-label">Heatmap data points</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value display">3</div>
+          <div class="stat-label">Route modes — fastest, safest, balanced</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated safety grid canvas -->
+    <div class="hero-visual">
+      <div class="grid-canvas">
+        <canvas id="safetyCanvas"></canvas>
+      </div>
+      <div class="float-card safe"><i class="fas fa-check-circle"></i> Aundh — Score 80 / 100</div>
+      <div class="float-card danger"><i class="fas fa-triangle-exclamation"></i> Yerwada — High Risk</div>
+      <div class="float-card route"><i class="fas fa-route"></i> Safest route found!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────────────── -->
+<div class="features-wrapper" id="features">
+  <div class="section" style="padding-top:4rem;padding-bottom:4rem">
+    <div class="section-label">Features</div>
+    <h2 class="section-title display">Everything you need to travel safer</h2>
+    <p class="section-sub">Combining historical records with live crowd intelligence to give you the clearest picture of safety on Pune's roads.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon blue"><i class="fas fa-brain"></i></div>
+        <h3>ML Safety Model</h3>
+        <p>Trained on Pune's accident blackspots, NCRB crime data, PMC lighting records and women-safety reports. Updated as crowd feedback arrives.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon green"><i class="fas fa-route"></i></div>
+        <h3>Three Route Modes</h3>
+        <p>Choose <strong style="color:#93c5fd">Fastest</strong> (Google ETA), <strong style="color:#6ee7b7">Safest</strong> (highest safety score), or <strong style="color:#fcd34d">Balanced</strong> — a weighted blend of both.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon amber"><i class="fas fa-users"></i></div>
+        <h3>Crowd-sourced Intelligence</h3>
+        <p>After each journey, users rate safety along their route. Negative reports lower area scores; positive ones reinforce safe corridors.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon red"><i class="fas fa-fire"></i></div>
+        <h3>Live Safety Heatmap</h3>
+        <p>Red clusters = danger zones. Green = safe areas. Overlaid directly on the map, updated with every crowd-sourced data point.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon purple"><i class="fas fa-person-dress"></i></div>
+        <h3>Women Safety Layer</h3>
+        <p>Dedicated data layer for incidents against women — isolated stretches, poor lighting, and time-of-day risk patterns across Pune.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon cyan"><i class="fas fa-clock-rotate-left"></i></div>
+        <h3>Journey History</h3>
+        <p>All your past routes, safety scores and feedback in one place. Track how areas improve over time (signed-in users only).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── How it works ─────────────────────────────────────────────── -->
+<section class="section" id="how-it-works">
+  <div class="section-label">Process</div>
+  <h2 class="section-title display">How SafeRoute works</h2>
+  <p class="section-sub">Four steps from opening the app to arriving safely.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num display">01</div>
+      <h3>Enter your journey</h3>
+      <p>Type origin and destination anywhere in Pune. The autocomplete uses the Google Places API.</p>
+    </div>
+    <div class="step">
+      <div class="step-num display">02</div>
+      <h3>AI scores every route</h3>
+      <p>Our model samples 20+ waypoints per route, checks each against 34 safety zones plus live crowd data, and produces a safety score.</p>
+    </div>
+    <div class="step">
+      <div class="step-num display">03</div>
+      <h3>Pick Fastest / Safest / Balanced</h3>
+      <p>Compare all three options side-by-side with their safety score, ETA and distance before choosing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num display">04</div>
+      <h3>Rate &amp; improve the model</h3>
+      <p>After your journey, a one-time feedback prompt lets you flag unsafe spots. Your report immediately shifts the heatmap for everyone.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Data section ─────────────────────────────────────────────── -->
+<section class="section" id="data" style="padding-top:0">
+  <div class="section-label">Data sources</div>
+  <h2 class="section-title display">Built on real Pune data</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:2rem">
+    <div class="card" style="display:flex;align-items:center;gap:1rem">
+      <div class="feat-icon blue" style="flex-shrink:0"><i class="fas fa-car-burst"></i></div>
+      <div>
+        <div style="font-weight:600;font-size:.9rem;color:#fff">Accident Records</div>
+        <div style="font-size:.8rem;color:var(--muted-2)">Maharashtra Traffic Police annual reports 2022-23</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:1rem">
+      <div class="feat-icon red" style="flex-shrink:0"><i class="fas fa-user-shield"></i></div>
+      <div>
+        <div style="font-weight:600;font-size:.9rem;color:#fff">Crime Statistics</div>
+        <div style="font-size:.8rem;color:var(--muted-2)">NCRB Crime in India 2022 — Pune City data</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:1rem">
+      <div class="feat-icon purple" style="flex-shrink:0"><i class="fas fa-venus"></i></div>
+      <div>
+        <div style="font-weight:600;font-size:.9rem;color:#fff">Women Safety</div>
+        <div style="font-size:.8rem;color:var(--muted-2)">Ministry of WCD — Safe City Project Pune 2023</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:1rem">
+      <div class="feat-icon amber" style="flex-shrink:0"><i class="fas fa-lightbulb"></i></div>
+      <div>
+        <div style="font-weight:600;font-size:.9rem;color:#fff">Street Lighting</div>
+        <div style="font-size:.8rem;color:var(--muted-2)">PMC street-light coverage audit 2023</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────────────── -->
+<div class="cta-strip">
+  <h2 class="display">Start navigating safely — it's free</h2>
+  <p>Join residents of Pune who choose the safer road.</p>
+  <div class="actions">
+    <a href="login.html?mode=register" class="btn btn-primary btn-lg">Create free account</a>
+    <a href="dashboard.html" class="btn btn-outline btn-lg">Explore the map</a>
+  </div>
+</div>
+
+<!-- ── Footer ─────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">
+        <i class="fas fa-shield-halved shield"></i>SafeRoute<span class="accent">Pune</span>
+      </div>
+      <p>Making Pune's roads safer one route at a time — built with real accident, crime, and community data.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="dashboard.html">Map</a>
+      <a href="login.html">Sign in</a>
+    </div>
+    <div class="footer-col">
+      <h4>Data</h4>
+      <a href="#">Accident hotspots</a>
+      <a href="#">Crime statistics</a>
+      <a href="#">Women safety</a>
+      <a href="#">Street lighting</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 SafeRoute Pune. Data: Maharashtra Traffic Police · NCRB · PMC · WCD Safe City</span>
+    <span style="color:var(--muted)">Built for Pune. Made with ❤️</span>
+  </div>
+</footer>
+
+<script>
+/* ── Animated safety grid ── */
+(function () {
+  const canvas  = document.getElementById('safetyCanvas');
+  const ctx     = canvas.getContext('2d');
+  const COLS = 22, ROWS = 16;
+
+  // Safety grid based loosely on Pune geography
+  const GRID = [
+    [0,0,1,1,2,2,2,1,1,2,3,3,2,2,1,1,0,0,0,0,0,0],
+    [0,1,1,2,2,2,2,2,2,3,3,3,3,2,2,1,1,0,0,0,0,0],
+    [1,1,2,2,3,3,3,2,3,3,4,4,3,3,2,2,1,1,0,0,0,0],
+    [1,2,2,3,3,4,4,3,3,4,4,4,4,3,3,2,2,1,1,0,0,0],
+    [1,2,3,3,4,4,4,4,4,4,4,3,3,3,2,2,2,1,1,0,0,0],
+    [2,2,3,3,4,5,5,4,4,4,3,3,2,2,2,3,3,2,1,1,0,0],
+    [2,3,3,4,4,5,5,5,4,3,3,2,2,2,3,3,4,3,2,1,0,0],
+    [2,3,4,4,5,5,5,5,4,3,2,2,2,3,3,4,4,3,2,1,1,0],
+    [1,2,3,4,4,5,5,4,3,3,2,2,3,3,4,4,3,3,2,2,1,0],
+    [1,2,3,3,4,4,4,3,3,2,2,2,3,4,4,3,3,2,2,1,1,0],
+    [1,1,2,3,3,4,3,3,2,2,1,2,3,3,3,2,2,2,1,1,0,0],
+    [0,1,2,2,3,3,3,2,2,1,1,2,3,3,2,2,1,1,1,0,0,0],
+    [0,1,1,2,2,3,2,2,1,1,1,2,2,2,2,1,1,1,0,0,0,0],
+    [0,0,1,1,2,2,2,1,1,0,1,1,2,2,1,1,0,0,0,0,0,0],
+    [0,0,0,1,1,2,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0],
+  ];
+  // 0=bg, 1=low-risk, 2=moderate, 3=risky, 4=high-risk, 5=critical
+
+  const COLOURS = [
+    null,
+    'rgba(16,185,129,',   // safe
+    'rgba(245,158,11,',   // moderate
+    'rgba(249,115,22,',   // risky
+    'rgba(239,68,68,',    // high
+    'rgba(185,28,28,',    // critical
+  ];
+
+  let pulseT = 0;
+  let routeT = 0;
+  const routePath = [{c:5,r:12},{c:6,r:11},{c:7,r:10},{c:7,r:9},{c:7,r:8},{c:7,r:7},{c:7,r:6},{c:6,r:5},{c:5,r:5},{c:5,r:4},{c:4,r:3}];
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width  = rect.width  * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+  }
+
+  function draw() {
+    const W = canvas.width  / devicePixelRatio;
+    const H = canvas.height / devicePixelRatio;
+    const cw = W / COLS, ch = H / ROWS;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw cells
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const v = GRID[r][c];
+        if (!v) continue;
+        const colour = COLOURS[v];
+        // Pulse effect
+        const pulse = 1 + .18 * Math.sin(pulseT * .04 + r*.5 + c*.3);
+        const alpha = Math.min(.55, (.15 + v * .08) * pulse);
+        ctx.fillStyle = colour + alpha + ')';
+        ctx.beginPath();
+        ctx.roundRect(c*cw + 1, r*ch + 1, cw - 2, ch - 2, 3);
+        ctx.fill();
+      }
+    }
+
+    // Draw grid lines subtly
+    ctx.strokeStyle = 'rgba(255,255,255,.03)';
+    ctx.lineWidth = .5;
+    for (let c = 0; c <= COLS; c++) {
+      ctx.beginPath(); ctx.moveTo(c*cw,0); ctx.lineTo(c*cw,H); ctx.stroke();
+    }
+    for (let r = 0; r <= ROWS; r++) {
+      ctx.beginPath(); ctx.moveTo(0,r*ch); ctx.lineTo(W,r*ch); ctx.stroke();
+    }
+
+    // Animate route path
+    const rIdx = Math.floor(routeT / 20) % routePath.length;
+    for (let i = 0; i <= rIdx; i++) {
+      const {c, r} = routePath[i];
+      const cx = c*cw + cw*.5, cy = r*ch + ch*.5;
+      const glow = ctx.createRadialGradient(cx,cy,0,cx,cy,cw*.7);
+      glow.addColorStop(0, 'rgba(59,130,246,.7)');
+      glow.addColorStop(1, 'rgba(59,130,246,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, cw*.7, 0, Math.PI*2);
+      ctx.fill();
+      // Dot
+      ctx.fillStyle = i === rIdx ? 'rgba(255,255,255,.95)' : 'rgba(59,130,246,.8)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, i === rIdx ? 4 : 2.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    pulseT++;
+    routeT++;
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SafeRoute Pune — Map</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    #map { height: 100%; }
+    .sidebar { height: 100%; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ── Top nav ──────────────────────────────────────────────── -->
+  <nav class="dash-nav">
+    <a href="index.html" class="dash-brand">
+      <i class="fas fa-shield-halved shield"></i>SafeRoute<span class="accent">Pune</span>
+    </a>
+    <div style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.5rem">
+      <span id="dataStatus" style="display:inline-flex;align-items:center;gap:.4rem">
+        <span class="dot-status loading"></span> Loading safety data…
+      </span>
+    </div>
+    <div class="dash-nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='index.html'">
+        <i class="fas fa-home"></i>
+      </button>
+      <!-- User chip / login -->
+      <div id="userChipArea">
+        <a href="login.html" class="btn btn-primary btn-sm" id="signInBtn">Sign in</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Map layout ───────────────────────────────────────────── -->
+  <div class="map-layout">
+
+    <!-- ── Sidebar ──────────────────────────────────────────────── -->
+    <div class="sidebar" id="sidebar">
+
+      <!-- Search section -->
+      <div class="sidebar-section">
+        <div class="sb-heading">Plan your route</div>
+        <div class="search-wrap" style="margin-bottom:.5rem">
+          <i class="fas fa-circle-dot search-icon" style="color:var(--blue)"></i>
+          <input type="text" id="originInput" placeholder="Starting point…" autocomplete="off">
+        </div>
+        <div class="search-connector"><div class="search-connector-line"></div></div>
+        <div class="search-wrap" style="margin-top:.5rem">
+          <i class="fas fa-location-dot search-icon" style="color:var(--red)"></i>
+          <input type="text" id="destInput" placeholder="Where are you going?" autocomplete="off">
+        </div>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="calculateRoutes()">
+            <i class="fas fa-magnifying-glass"></i> Find safe routes
+          </button>
+        </div>
+      </div>
+
+      <!-- Route mode selector -->
+      <div class="sidebar-section" id="routeModeSection" style="display:none">
+        <div class="sb-heading">Select route type</div>
+        <div class="route-modes">
+          <div class="mode-pill fastest active" id="pill-fastest" onclick="selectMode('fastest')">
+            <span class="pill-icon">⚡</span>Fastest
+          </div>
+          <div class="mode-pill safest" id="pill-safest" onclick="selectMode('safest')">
+            <span class="pill-icon">🛡️</span>Safest
+          </div>
+          <div class="mode-pill balanced" id="pill-balanced" onclick="selectMode('balanced')">
+            <span class="pill-icon">⚖️</span>Balanced
+          </div>
+        </div>
+      </div>
+
+      <!-- Route results -->
+      <div class="sidebar-section" id="routeResultsSection" style="display:none">
+        <div class="sb-heading">Route options</div>
+        <div id="routeCards">
+          <!-- Injected by JS -->
+        </div>
+        <button class="btn btn-emerald" id="navigate-btn" style="display:none;width:100%;justify-content:center;margin-top:.5rem" onclick="startJourney()">
+          <i class="fas fa-play"></i> Start journey
+        </button>
+      </div>
+
+      <!-- Journey in progress -->
+      <div class="sidebar-section" id="journeySection" style="display:none">
+        <div class="journey-panel">
+          <h4><i class="fas fa-location-crosshairs"></i> Journey in progress</h4>
+          <div class="jp-dest" id="jpDest">—</div>
+          <div style="display:flex;gap:.5rem;font-size:.78rem;color:var(--muted-2);margin-bottom:.75rem">
+            <span><i class="fas fa-clock"></i> <span id="jpEta">—</span></span>
+            <span><i class="fas fa-road"></i> <span id="jpDist">—</span></span>
+            <span><i class="fas fa-shield-halved"></i> Score: <span id="jpScore">—</span></span>
+          </div>
+          <div class="journey-actions">
+            <button class="btn btn-sm btn-danger" onclick="endJourney()"><i class="fas fa-flag-checkered"></i> End journey</button>
+            <button class="btn btn-sm btn-ghost" onclick="cancelJourney()"><i class="fas fa-xmark"></i> Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer controls -->
+      <div class="sidebar-section">
+        <div class="sb-heading">Map layers</div>
+        <div class="layer-toggles">
+          <label class="layer-toggle">
+            <div class="layer-toggle-left">
+              <span class="dot dot-red"></span>
+              Safety heatmap
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleHeatmap" checked onchange="toggleLayer('heatmap')">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <label class="layer-toggle">
+            <div class="layer-toggle-left">
+              <span class="dot dot-amber"></span>
+              Accident hotspots
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleAccidents" onchange="toggleLayer('accidents')">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <label class="layer-toggle">
+            <div class="layer-toggle-left">
+              <span class="dot dot-blue"></span>
+              Safety zones info
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleZones" onchange="toggleLayer('zones')">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <label class="layer-toggle">
+            <div class="layer-toggle-left">
+              <span class="dot dot-purple"></span>
+              Women safety areas
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleWomen" onchange="toggleLayer('women')">
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+        </div>
+      </div>
+
+      <!-- Safety legend -->
+      <div class="sidebar-section">
+        <div class="sb-heading">Safety score legend</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.8rem">
+          <div style="display:flex;align-items:center;gap:.6rem;color:var(--emerald)"><i class="fas fa-circle"></i><span>70–100 Safe</span></div>
+          <div style="display:flex;align-items:center;gap:.6rem;color:var(--amber)"><i class="fas fa-circle"></i><span>50–69 Moderate</span></div>
+          <div style="display:flex;align-items:center;gap:.6rem;color:#f97316"><i class="fas fa-circle"></i><span>30–49 Risky</span></div>
+          <div style="display:flex;align-items:center;gap:.6rem;color:var(--red)"><i class="fas fa-circle"></i><span>0–29 Dangerous</span></div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- ── Map ────────────────────────────────────────────────── -->
+    <div id="map"></div>
+
+  </div>
+</div>
+
+<!-- ── Toast container ────────────────────────────────────────── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ── Loading overlay ───────────────────────────────────────── -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- ── Feedback modal ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="feedbackOverlay">
+  <div class="modal">
+    <h2><i class="fas fa-star" style="color:var(--amber)"></i> Rate your journey</h2>
+    <p class="modal-sub">Your feedback improves safety scores for everyone in Pune. You can only submit once per journey.</p>
+
+    <div style="margin-bottom:1rem">
+      <div class="modal-label">Overall journey experience</div>
+      <div class="star-rating" id="overallStars">
+        <span class="star" data-v="1" onclick="setStars('overall',1)">★</span>
+        <span class="star" data-v="2" onclick="setStars('overall',2)">★</span>
+        <span class="star" data-v="3" onclick="setStars('overall',3)">★</span>
+        <span class="star" data-v="4" onclick="setStars('overall',4)">★</span>
+        <span class="star" data-v="5" onclick="setStars('overall',5)">★</span>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div class="modal-label">How safe did the route feel?</div>
+      <div class="star-rating" id="safetyStars">
+        <span class="star" data-v="1" onclick="setStars('safety',1)">★</span>
+        <span class="star" data-v="2" onclick="setStars('safety',2)">★</span>
+        <span class="star" data-v="3" onclick="setStars('safety',3)">★</span>
+        <span class="star" data-v="4" onclick="setStars('safety',4)">★</span>
+        <span class="star" data-v="5" onclick="setStars('safety',5)">★</span>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div class="modal-label">Comments <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+      <textarea id="fbComment" placeholder="Anything we should know about this route…"></textarea>
+    </div>
+    <div class="unsafe-section">
+      <label class="checkbox-row">
+        <input type="checkbox" id="feltUnsafe" onchange="toggleUnsafeDetails()">
+        I felt unsafe at a specific location
+      </label>
+      <div class="unsafe-details" id="unsafeDetails">
+        <div style="font-size:.82rem;color:var(--muted-2);margin-top:.5rem;margin-bottom:.5rem">
+          <i class="fas fa-info-circle" style="color:var(--blue)"></i>
+          Click the map to mark the unsafe spot, or enter coordinates manually.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Latitude</label>
+            <input type="number" id="unsafeLat" placeholder="18.52…" step="0.0001">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Longitude</label>
+            <input type="number" id="unsafeLng" placeholder="73.85…" step="0.0001">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>What made it unsafe?</label>
+          <input type="text" id="unsafeReason" placeholder="e.g. Poor lighting, harassment, accident…">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeFeedback()">Skip</button>
+      <button class="btn btn-primary" onclick="submitFeedback()"><i class="fas fa-paper-plane"></i> Submit feedback</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Google Maps API ────────────────────────────────────────── -->
+<script>
+// ── Config ────────────────────────────────────────────────────────
+const PUNE_CENTER  = { lat: 18.5204, lng: 73.8567 };
+const API_KEY      = 'AIzaSyBa4nyTzzOQiH8rpecLMOW3MYZGIC9ORDQ';
+const API_BASE     = '';   // same origin
+
+// ── State ─────────────────────────────────────────────────────────
+let map, heatmapLayer, directionsService, directionsRenderer;
+let originAC, destAC;
+let safetyData     = null;
+let selectedMode   = 'fastest';
+let scoredRoutes   = {};
+let activeJourney  = null;
+let activeJourneyId= null;
+let fb             = { overall: 0, safety: 0 };
+let markingUnsafe  = false;
+let unsafeMarker   = null;
+let accidentMarkers= [];
+let zoneMarkers    = [];
+let womenMarkers   = [];
+let layers         = { accidents: false, zones: false, women: false };
+
+const user  = JSON.parse(localStorage.getItem('sr_user')  || 'null');
+const token = localStorage.getItem('sr_token') || '';
+
+// ── Dark map style ────────────────────────────────────────────────
+const DARK_STYLE = [
+  {elementType:'geometry',stylers:[{color:'#0d1b2e'}]},
+  {elementType:'labels.text.fill',stylers:[{color:'#8ec3b9'}]},
+  {elementType:'labels.text.stroke',stylers:[{color:'#0d1b2e'}]},
+  {featureType:'road',elementType:'geometry',stylers:[{color:'#1a3655'}]},
+  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#1e4b7a'}]},
+  {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#b0d5ce'}]},
+  {featureType:'water',elementType:'geometry',stylers:[{color:'#030b1a'}]},
+  {featureType:'landscape',elementType:'geometry',stylers:[{color:'#0a1525'}]},
+  {featureType:'poi',elementType:'geometry',stylers:[{color:'#10243a'}]},
+  {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
+  {featureType:'transit',stylers:[{visibility:'off'}]},
+];
+
+// ── Utility ───────────────────────────────────────────────────────
+function haversine(lat1,lng1,lat2,lng2) {
+  const R=6371000,p1=lat1*Math.PI/180,p2=lat2*Math.PI/180;
+  const dp=(lat2-lat1)*Math.PI/180,dl=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function scoreColor(s) {
+  if (s >= 70) return '#10b981';
+  if (s >= 50) return '#f59e0b';
+  if (s >= 30) return '#f97316';
+  return '#ef4444';
+}
+function scoreLabel(s) {
+  if (s >= 70) return 'Safe';
+  if (s >= 50) return 'Moderate';
+  if (s >= 30) return 'Risky';
+  return 'Dangerous';
+}
+
+function getPointScore(lat, lng) {
+  if (!safetyData) return 62;
+  let wSum=0, sSum=0;
+  for (const z of safetyData.zones) {
+    const d = haversine(lat,lng,z.lat,z.lng);
+    const inf = z.radius * 1.6;
+    if (d < inf) {
+      const w = (1 - d/inf)**2;
+      sSum += z.scores.overall * w;
+      wSum += w;
+    }
+  }
+  return wSum > 0 ? sSum/wSum : 62;
+}
+
+function scoreRoute(route) {
+  const pts = [];
+  for (const leg of route.legs)
+    for (const step of leg.steps) {
+      const path = step.path || [];
+      for (let i=0; i<path.length; i+=3)
+        pts.push({ lat: path[i].lat(), lng: path[i].lng() });
+    }
+  if (!pts.length) return 62;
+  const scores = pts.map(p => getPointScore(p.lat, p.lng));
+  const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+  const min = Math.min(...scores);
+  return Math.round(avg*0.7 + min*0.3);
+}
+
+function authHeaders() {
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                : { 'Content-Type': 'application/json' };
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg, type='info', duration=3500) {
+  const icons = { success:'check-circle', error:'circle-xmark', warning:'triangle-exclamation', info:'circle-info' };
+  const colours = { success:'var(--emerald)', error:'var(--red)', warning:'var(--amber)', info:'var(--blue)' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas fa-${icons[type]||'circle-info'}" style="color:${colours[type]}"></i>${msg}`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, duration);
+}
+
+function loading(show) { document.getElementById('loadingOverlay').classList.toggle('show', show); }
+
+// ── Auth UI ───────────────────────────────────────────────────────
+function renderUserChip() {
+  const area = document.getElementById('userChipArea');
+  if (!user) {
+    area.innerHTML = `<a href="login.html" class="btn btn-primary btn-sm"><i class="fas fa-right-to-bracket"></i> Sign in</a>`;
+    return;
+  }
+  const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  area.innerHTML = `
+    <div class="user-chip" onclick="this.classList.toggle('open')">
+      <div class="user-avatar">${initials}</div>
+      <span>${user.name.split(' ')[0]}</span>
+      <i class="fas fa-chevron-down" style="font-size:.65rem;color:var(--muted)"></i>
+      <div class="user-dropdown">
+        <a href="profile.html"><i class="fas fa-user"></i> Profile &amp; history</a>
+        <a href="dashboard.html"><i class="fas fa-map"></i> Map</a>
+        <div class="divider"></div>
+        <a href="#" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Sign out</a>
+      </div>
+    </div>`;
+}
+
+function logout() {
+  localStorage.removeItem('sr_token');
+  localStorage.removeItem('sr_user');
+  window.location.href = 'index.html';
+}
+
+// ── Init map ──────────────────────────────────────────────────────
+async function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: PUNE_CENTER,
+    zoom: 12,
+    styles: DARK_STYLE,
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+  });
+
+  directionsService  = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    suppressMarkers: false,
+    polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 5, strokeOpacity: .85 }
+  });
+  directionsRenderer.setMap(map);
+
+  // Autocomplete — restrict to Pune region
+  const pBounds = new google.maps.LatLngBounds(
+    new google.maps.LatLng(18.39, 73.70),
+    new google.maps.LatLng(18.66, 73.98)
+  );
+  const acOpts = { bounds: pBounds, strictBounds: false, componentRestrictions: { country: 'in' } };
+  originAC = new google.maps.places.Autocomplete(document.getElementById('originInput'), acOpts);
+  destAC   = new google.maps.places.Autocomplete(document.getElementById('destInput'),   acOpts);
+
+  // Click on map to mark unsafe spot
+  map.addListener('click', e => {
+    if (!markingUnsafe) return;
+    document.getElementById('unsafeLat').value = e.latLng.lat().toFixed(5);
+    document.getElementById('unsafeLng').value = e.latLng.lng().toFixed(5);
+    if (unsafeMarker) unsafeMarker.setMap(null);
+    unsafeMarker = new google.maps.Marker({
+      position: e.latLng, map,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale:8, fillColor:'#ef4444', fillOpacity:1, strokeColor:'#fff', strokeWeight:2 }
+    });
+    toast('Unsafe location marked on map', 'warning');
+  });
+
+  renderUserChip();
+  await loadSafetyData();
+}
+
+// ── Safety data ───────────────────────────────────────────────────
+async function loadSafetyData() {
+  document.getElementById('dataStatus').innerHTML =
+    `<span class="dot-status loading"></span> Loading safety data…`;
+  try {
+    const [zonesRes, heatRes, hotspotsRes] = await Promise.all([
+      fetch(`${API_BASE}/api/safety/zones`),
+      fetch(`${API_BASE}/api/safety/heatmap`),
+      fetch(`${API_BASE}/api/safety/hotspots`),
+    ]);
+    const zonesData    = await zonesRes.json();
+    const heatData     = await heatRes.json();
+    const hotspotsData = await hotspotsRes.json();
+
+    safetyData = {
+      zones:                 zonesData.zones,
+      heatmap_points:        heatData.heatmap_points,
+      accident_hotspots:     hotspotsData.accident_hotspots,
+      women_safety_concerns: hotspotsData.women_safety_concerns,
+    };
+
+    buildHeatmap(safetyData.heatmap_points);
+    buildAccidentMarkers(safetyData.accident_hotspots);
+    buildZoneMarkers(safetyData.zones);
+    buildWomenMarkers(safetyData.women_safety_concerns);
+
+    document.getElementById('dataStatus').innerHTML =
+      `<span class="dot-status ok"></span> ${safetyData.zones.length} safety zones loaded`;
+    toast(`Safety data loaded — ${safetyData.zones.length} zones across Pune`, 'success');
+  } catch(e) {
+    document.getElementById('dataStatus').innerHTML =
+      `<span class="dot-status err"></span> Data load error`;
+    toast('Could not load safety data: ' + e.message, 'error');
+  }
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────
+function buildHeatmap(points) {
+  const data = points.map(p => ({
+    location: new google.maps.LatLng(p.lat, p.lng),
+    weight: p.weight
+  }));
+
+  if (heatmapLayer) heatmapLayer.setMap(null);
+  heatmapLayer = new google.maps.visualization.HeatmapLayer({
+    data,
+    radius: 25,
+    opacity: 0.72,
+    gradient: [
+      'rgba(0,0,0,0)',
+      'rgba(0,255,0,0.35)',
+      'rgba(255,255,0,0.5)',
+      'rgba(255,128,0,0.65)',
+      'rgba(255,0,0,0.8)',
+      'rgba(180,0,0,0.9)',
+    ]
+  });
+  heatmapLayer.setMap(map);
+}
+
+// ── Accident markers ──────────────────────────────────────────────
+const severityColour = { CRITICAL:'#7f1d1d', HIGH:'#ef4444', MODERATE:'#f97316' };
+
+function buildAccidentMarkers(hotspots) {
+  accidentMarkers.forEach(m => m.setMap(null));
+  accidentMarkers = [];
+  for (const h of hotspots) {
+    const marker = new google.maps.Marker({
+      position: { lat: h.lat, lng: h.lng },
+      map: null,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: h.severity==='CRITICAL' ? 10 : h.severity==='HIGH' ? 7 : 5,
+        fillColor: severityColour[h.severity] || '#f97316',
+        fillOpacity: 0.9,
+        strokeColor: '#fff',
+        strokeWeight: 1.5
+      },
+      title: h.name
+    });
+    const info = new google.maps.InfoWindow({
+      content: `<div style="background:#0d1b2e;color:#e2e8f0;padding:.75rem;border-radius:8px;font-family:Inter,sans-serif;font-size:.82rem;max-width:220px">
+        <strong style="color:#ef4444"><i class="fas fa-triangle-exclamation"></i> ${h.name}</strong><br>
+        <span style="color:#64748b">Severity: ${h.severity}</span><br>
+        <span>~${h.incidents_per_year} incidents/year</span>
+      </div>`
+    });
+    marker.addListener('click', () => info.open(map, marker));
+    accidentMarkers.push(marker);
+  }
+}
+
+// ── Zone markers ──────────────────────────────────────────────────
+function buildZoneMarkers(zones) {
+  zoneMarkers.forEach(m => m.setMap(null));
+  zoneMarkers = [];
+  for (const z of zones) {
+    const score = z.scores.overall;
+    const marker = new google.maps.Marker({
+      position: { lat: z.lat, lng: z.lng },
+      map: null,
+      label: { text: String(Math.round(score)), color: '#fff', fontSize: '11px', fontWeight: '700' },
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 16,
+        fillColor: scoreColor(score),
+        fillOpacity: 0.85,
+        strokeColor: '#0d1b2e',
+        strokeWeight: 2
+      },
+      title: z.name
+    });
+    const bars = (cat, val) => `<div style="display:flex;justify-content:space-between;margin-top:.3rem"><span style="color:#64748b">${cat}</span><span style="color:${scoreColor(val)}">${val}</span></div>`;
+    const info = new google.maps.InfoWindow({
+      content: `<div style="background:#0d1b2e;color:#e2e8f0;padding:.75rem;border-radius:8px;font-family:Inter,sans-serif;font-size:.82rem;min-width:200px">
+        <strong style="color:#fff;font-size:.9rem">${z.name}</strong>
+        <span style="float:right;background:${scoreColor(score)};color:#fff;padding:.1rem .4rem;border-radius:4px;font-size:.75rem">${scoreLabel(score)}</span>
+        ${bars('Overall', z.scores.overall)}
+        ${bars('Crime', z.scores.crime)}
+        ${bars('Accidents', z.scores.accidents)}
+        ${bars('Lighting', z.scores.lighting)}
+        ${bars("Women's safety", z.scores.women_safety)}
+        ${z.factors.length ? `<div style="margin-top:.5rem;color:#64748b;font-size:.75rem">${z.factors.slice(0,2).join(' · ')}</div>` : ''}
+      </div>`
+    });
+    marker.addListener('click', () => info.open(map, marker));
+    zoneMarkers.push(marker);
+  }
+}
+
+// ── Women safety markers ──────────────────────────────────────────
+function buildWomenMarkers(concerns) {
+  womenMarkers.forEach(m => m.setMap(null));
+  womenMarkers = [];
+  for (const w of concerns) {
+    const marker = new google.maps.Marker({
+      position: { lat: w.lat, lng: w.lng },
+      map: null,
+      icon: {
+        path: 'M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z',
+        fillColor: '#a78bfa',
+        fillOpacity: 0.9,
+        scale: 1.2,
+        strokeColor: '#fff',
+        strokeWeight: 1
+      },
+      title: w.name
+    });
+    const info = new google.maps.InfoWindow({
+      content: `<div style="background:#0d1b2e;color:#e2e8f0;padding:.75rem;border-radius:8px;font-family:Inter,sans-serif;font-size:.82rem;max-width:220px">
+        <strong style="color:#a78bfa">⚠️ ${w.name}</strong><br>
+        <span style="color:#64748b">Risk period: ${w.risk_period}</span><br>
+        <span>${Array.isArray(w.risk)?w.risk.join(', '):''}</span>
+      </div>`
+    });
+    marker.addListener('click', () => info.open(map, marker));
+    womenMarkers.push(marker);
+  }
+}
+
+// ── Layer toggles ─────────────────────────────────────────────────
+function toggleLayer(layer) {
+  const checked = document.getElementById('toggle' + layer.charAt(0).toUpperCase() + layer.slice(1)).checked;
+  if (layer === 'heatmap') {
+    heatmapLayer && heatmapLayer.setMap(checked ? map : null);
+    return;
+  }
+  const markers = { accidents: accidentMarkers, zones: zoneMarkers, women: womenMarkers }[layer] || [];
+  markers.forEach(m => m.setMap(checked ? map : null));
+  layers[layer] = checked;
+}
+
+// ── Route calculation ─────────────────────────────────────────────
+async function calculateRoutes() {
+  const origin = document.getElementById('originInput').value.trim();
+  const dest   = document.getElementById('destInput').value.trim();
+  if (!origin || !dest) { toast('Enter both a starting point and destination', 'warning'); return; }
+
+  loading(true);
+  directionsRenderer.setDirections({ routes: [] });
+  document.getElementById('routeResultsSection').style.display = 'none';
+  document.getElementById('routeModeSection').style.display = 'none';
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      directionsService.route({
+        origin,
+        destination: dest,
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: true,
+        region: 'in'
+      }, (res, status) => {
+        if (status === 'OK') resolve(res);
+        else reject(new Error('No route found: ' + status));
+      });
+    });
+
+    const routes = result.routes;
+    const scored = routes.map((r, idx) => {
+      const score   = scoreRoute(r);
+      const leg     = r.legs[0];
+      return {
+        route: r, routeIndex: idx,
+        safetyScore: score,
+        duration: leg.duration.value,
+        durationText: leg.duration.text,
+        distance: leg.distance.value,
+        distanceText: leg.distance.text,
+        summary: r.summary || `Route ${idx+1}`,
+        originLat:  leg.start_location.lat(),
+        originLng:  leg.start_location.lng(),
+        destLat:    leg.end_location.lat(),
+        destLng:    leg.end_location.lng(),
+        polyline:   r.overview_polyline
+      };
+    });
+
+    // Fastest = lowest duration
+    const byTime   = [...scored].sort((a,b)=>a.duration-b.duration);
+    // Safest  = highest safety score
+    const bySafety = [...scored].sort((a,b)=>b.safetyScore-a.safetyScore);
+
+    // Balanced: normalise & combine
+    const maxT=Math.max(...scored.map(r=>r.duration));
+    const minT=Math.min(...scored.map(r=>r.duration));
+    const maxS=Math.max(...scored.map(r=>r.safetyScore));
+    const minS=Math.min(...scored.map(r=>r.safetyScore));
+
+    scored.forEach(r=>{
+      const tScore = maxT===minT ? 100 : 100-((r.duration-minT)/(maxT-minT))*100;
+      const sNorm  = maxS===minS ? 80 : ((r.safetyScore-minS)/(maxS-minS))*100;
+      r.balancedScore = tScore*0.5 + sNorm*0.5;
+    });
+    const byBalance = [...scored].sort((a,b)=>b.balancedScore-a.balancedScore);
+
+    scoredRoutes = {
+      fastest:  byTime[0],
+      safest:   bySafety[0],
+      balanced: byBalance[0]
+    };
+
+    renderRouteCards();
+    document.getElementById('routeModeSection').style.display = '';
+    document.getElementById('routeResultsSection').style.display = '';
+
+    // Show current mode route on map
+    displayRoute(scoredRoutes[selectedMode]);
+
+    loading(false);
+    toast(`${routes.length} route${routes.length>1?'s':''} analysed and scored`, 'success');
+  } catch(e) {
+    loading(false);
+    toast(e.message, 'error');
+  }
+}
+
+function renderRouteCards() {
+  const container = document.getElementById('routeCards');
+  const types = ['fastest','safest','balanced'];
+  const icons  = { fastest:'⚡', safest:'🛡️', balanced:'⚖️' };
+  container.innerHTML = '';
+
+  for (const type of types) {
+    const r = scoredRoutes[type];
+    if (!r) continue;
+    const score = r.safetyScore;
+    const col   = scoreColor(score);
+    const isSame = types.filter(t=>scoredRoutes[t]&&scoredRoutes[t].routeIndex===r.routeIndex);
+
+    const card = document.createElement('div');
+    card.className = `route-card${type===selectedMode?' selected':''}`;
+    card.id = `rc-${type}`;
+    card.onclick = () => selectMode(type);
+    card.innerHTML = `
+      <div class="route-card-header">
+        <span class="route-label ${type}">${icons[type]} ${type.charAt(0).toUpperCase()+type.slice(1)}</span>
+        <div class="safety-ring" style="border-color:${col}">
+          <span class="score-num" style="color:${col}">${score}</span>
+          <span class="score-sub">/ 100</span>
+        </div>
+      </div>
+      <div class="route-meta">
+        <span><i class="fas fa-clock"></i> ${r.durationText}</span>
+        <span><i class="fas fa-road"></i> ${(r.distance/1000).toFixed(1)} km</span>
+      </div>
+      <div class="route-summary">${r.summary}${isSame.length>1?' · <span style="color:var(--muted)">same as '+isSame.filter(t=>t!==type).join('/')+'</span>':''}</div>
+      <div style="margin-top:.5rem">
+        <div style="height:4px;border-radius:2px;background:var(--surface-2)">
+          <div style="height:100%;border-radius:2px;background:${col};width:${score}%;transition:width .5s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.2rem">
+          <span>Dangerous</span><span style="color:${col}">${scoreLabel(score)}</span><span>Safe</span>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  }
+  document.getElementById('navigate-btn').style.display = 'flex';
+}
+
+function selectMode(mode) {
+  selectedMode = mode;
+  ['fastest','safest','balanced'].forEach(m => {
+    document.getElementById(`pill-${m}`)?.classList.toggle('active', m===mode);
+    document.getElementById(`rc-${m}`)?.classList.toggle('selected', m===mode);
+  });
+  if (scoredRoutes[mode]) displayRoute(scoredRoutes[mode]);
+}
+
+function displayRoute(scored) {
+  if (!scored) return;
+  const r = new google.maps.DirectionsResult();
+  directionsRenderer.setDirections({ routes: [scored.route], geocoded_waypoints: [] });
+  directionsRenderer.setRouteIndex(0);
+}
+
+// ── Journey ───────────────────────────────────────────────────────
+async function startJourney() {
+  const r = scoredRoutes[selectedMode];
+  if (!r) return;
+
+  activeJourney = {
+    origin:      document.getElementById('originInput').value,
+    destination: document.getElementById('destInput').value,
+    routeType:   selectedMode,
+    safetyScore: r.safetyScore,
+    distanceM:   r.distance,
+    durationS:   r.duration,
+    originLat:   r.originLat, originLng: r.originLng,
+    destLat:     r.destLat,   destLng:   r.destLng,
+    startedAt:   Date.now()
+  };
+
+  if (user && token) {
+    try {
+      const res = await fetch(`${API_BASE}/api/journeys/start`, {
+        method:'POST', headers: authHeaders(),
+        body: JSON.stringify({
+          origin: activeJourney.origin, destination: activeJourney.destination,
+          origin_lat: r.originLat, origin_lng: r.originLng,
+          dest_lat: r.destLat, dest_lng: r.destLng,
+          route_type: selectedMode, safety_score: r.safetyScore,
+          distance_m: r.distance, duration_s: r.duration,
+          encoded_polyline: r.polyline
+        })
+      });
+      const data = await res.json();
+      activeJourneyId = data.journey_id;
+    } catch(e) { console.warn('Could not save journey:', e); }
+  }
+
+  document.getElementById('jpDest').textContent  = `→ ${activeJourney.destination}`;
+  document.getElementById('jpEta').textContent   = r.durationText;
+  document.getElementById('jpDist').textContent  = `${(r.distance/1000).toFixed(1)} km`;
+  document.getElementById('jpScore').innerHTML   = `<span style="color:${scoreColor(r.safetyScore)}">${r.safetyScore}</span>`;
+  document.getElementById('routeResultsSection').style.display = 'none';
+  document.getElementById('routeModeSection').style.display    = 'none';
+  document.getElementById('journeySection').style.display      = '';
+
+  toast(`Journey started via ${selectedMode} route (Safety: ${r.safetyScore}/100)`, 'success', 4000);
+}
+
+async function endJourney() {
+  if (!activeJourney) return;
+  if (activeJourneyId && token) {
+    try {
+      await fetch(`${API_BASE}/api/journeys/${activeJourneyId}/complete`, {
+        method:'PATCH', headers: authHeaders()
+      });
+    } catch(e) {}
+  }
+  if (user) {
+    openFeedback();
+  } else {
+    toast('Journey ended. Sign in to leave feedback and improve safety data!', 'info', 5000);
+    resetJourneyUI();
+  }
+}
+
+function cancelJourney() {
+  activeJourney = null; activeJourneyId = null;
+  directionsRenderer.setDirections({ routes: [] });
+  resetJourneyUI();
+  toast('Journey cancelled', 'info');
+}
+
+function resetJourneyUI() {
+  activeJourney = null;
+  document.getElementById('journeySection').style.display = 'none';
+  document.getElementById('routeModeSection').style.display = '';
+  document.getElementById('routeResultsSection').style.display = '';
+}
+
+// ── Feedback ──────────────────────────────────────────────────────
+function openFeedback() { document.getElementById('feedbackOverlay').classList.add('show'); markingUnsafe = false; }
+function closeFeedback() {
+  document.getElementById('feedbackOverlay').classList.remove('show');
+  if (unsafeMarker) { unsafeMarker.setMap(null); unsafeMarker = null; }
+  resetJourneyUI();
+  fb = { overall:0, safety:0 };
+  setStars('overall',0); setStars('safety',0);
+}
+
+function setStars(type, val) {
+  fb[type] = val;
+  const container = document.getElementById(`${type}Stars`);
+  container.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('lit', i<val));
+}
+
+function toggleUnsafeDetails() {
+  const show = document.getElementById('feltUnsafe').checked;
+  document.getElementById('unsafeDetails').classList.toggle('show', show);
+  markingUnsafe = show;
+  if (show) toast('Click on the map to mark the unsafe location', 'info', 4000);
+}
+
+async function submitFeedback() {
+  if (!fb.overall || !fb.safety)
+    return toast('Please rate overall experience and safety', 'warning');
+  if (!activeJourneyId)
+    return toast('No active journey to give feedback for', 'warning');
+
+  const feltUnsafe = document.getElementById('feltUnsafe').checked;
+  const body = {
+    overall_rating:  fb.overall,
+    safety_rating:   fb.safety,
+    comment:         document.getElementById('fbComment').value,
+    felt_unsafe:     feltUnsafe,
+    unsafe_lat:      feltUnsafe ? parseFloat(document.getElementById('unsafeLat').value)||null : null,
+    unsafe_lng:      feltUnsafe ? parseFloat(document.getElementById('unsafeLng').value)||null : null,
+    unsafe_reason:   feltUnsafe ? document.getElementById('unsafeReason').value : null
+  };
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/journeys/${activeJourneyId}/feedback`, {
+      method:'POST', headers: authHeaders(), body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    toast(data.message || 'Feedback submitted! Thank you.', 'success', 5000);
+    closeFeedback();
+  } catch(e) {
+    toast('Could not submit feedback: ' + e.message, 'error');
+  }
+}
+</script>
+
+<style>
+.dot-status { display:inline-block; width:8px; height:8px; border-radius:50%; }
+.dot-status.loading { background:var(--amber); animation:pulse 1s infinite; }
+.dot-status.ok  { background:var(--emerald); }
+.dot-status.err { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBa4nyTzzOQiH8rpecLMOW3MYZGIC9ORDQ&libraries=places,visualization&callback=initMap&loading=async">
+</script>
+</body>
+</html>

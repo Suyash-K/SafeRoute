@@ -1,0 +1,4 @@
+//node modules and .env and redundant files in gitignore
+
+.node_modules/
+.vscode/

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign in · SafeRoute Pune</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="auth-page">
+  <!-- Left panel -->
+  <div class="auth-left">
+    <div class="auth-left-deco"></div>
+    <div class="auth-left-content">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted-2)">
+        <i class="fas fa-arrow-left"></i> Back to home
+      </a>
+      <div style="margin:2.5rem 0 0">
+        <div class="nav-brand" style="margin-bottom:1.5rem">
+          <i class="fas fa-shield-halved shield"></i>SafeRoute<span class="accent">Pune</span>
+        </div>
+        <h2>Every route,<br>scored for safety.</h2>
+        <p style="margin-top:.75rem">Sign in to save journeys, give crowd-sourced safety feedback, and track your route history across Pune.</p>
+      </div>
+
+      <div class="auth-testimonials">
+        <div class="testimonial">
+          <p>"SafeRoute warned me about the Katraj Ghat stretch at night. Took the alternate and reached home safely."</p>
+          <div class="testimonial-user">— Priya S., Kothrud</div>
+        </div>
+        <div class="testimonial">
+          <p>"The balanced route saved me 3 minutes compared to the safest, without passing through Yerwada."</p>
+          <div class="testimonial-user">— Rahul M., Baner</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:.78rem;color:var(--muted)">
+      Data: Maharashtra Traffic Police · NCRB · PMC · WCD Safe City Project
+    </div>
+  </div>
+
+  <!-- Right panel (form) -->
+  <div class="auth-right" id="authRight">
+    <a href="index.html" class="back-link">
+      <i class="fas fa-arrow-left"></i> Home
+    </a>
+
+    <div id="loginPanel">
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to your SafeRoute account</p>
+
+      <div class="tab-switcher">
+        <button class="tab-btn active" onclick="showLogin()">Sign in</button>
+        <button class="tab-btn" onclick="showRegister()">Create account</button>
+      </div>
+
+      <div class="alert alert-error" id="loginError"></div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg form-submit" id="loginBtn">
+          Sign in <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="form-footer">
+        No account? <a href="#" onclick="showRegister()">Create one free</a>
+      </div>
+
+      <!-- Quick demo -->
+      <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <div style="font-size:.75rem;text-align:center;color:var(--muted);margin-bottom:.6rem">— OR —</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:.85rem" onclick="fillDemo()">
+          <i class="fas fa-flask"></i> Use demo account
+        </button>
+      </div>
+    </div>
+
+    <div id="registerPanel" style="display:none">
+      <h1>Create account</h1>
+      <p class="sub">Free forever. No credit card required.</p>
+
+      <div class="tab-switcher">
+        <button class="tab-btn" onclick="showLogin()">Sign in</button>
+        <button class="tab-btn active" onclick="showRegister()">Create account</button>
+      </div>
+
+      <div class="alert alert-error"   id="registerError"></div>
+      <div class="alert alert-success" id="registerSuccess"></div>
+
+      <form onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" id="regName" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password <span style="color:var(--muted);font-weight:400">(min 6 chars)</span></label>
+          <input type="password" id="regPassword" placeholder="••••••••" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-emerald btn-lg form-submit" id="regBtn">
+          Create account <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="form-footer">
+        Already have an account? <a href="#" onclick="showLogin()">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';   // same origin
+
+function showLogin()    { document.getElementById('loginPanel').style.display='block'; document.getElementById('registerPanel').style.display='none'; }
+function showRegister() { document.getElementById('loginPanel').style.display='none'; document.getElementById('registerPanel').style.display='block'; }
+
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.toggle('show', !!msg);
+}
+function setLoading(btn, loading) {
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<i class="fas fa-circle-notch fa-spin"></i> Please wait…' : btn.dataset.orig;
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  setError('loginError','');
+  const btn = document.getElementById('loginBtn');
+  if (!btn.dataset.orig) btn.dataset.orig = btn.innerHTML;
+  setLoading(btn, true);
+
+  try {
+    const res  = await fetch(`${API}/api/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+
+    localStorage.setItem('sr_token', data.token);
+    localStorage.setItem('sr_user',  JSON.stringify(data.user));
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    setError('loginError', err.message);
+    setLoading(btn, false);
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  setError('registerError','');
+  document.getElementById('registerSuccess').classList.remove('show');
+  const btn = document.getElementById('regBtn');
+  if (!btn.dataset.orig) btn.dataset.orig = btn.innerHTML;
+  setLoading(btn, true);
+
+  try {
+    const res  = await fetch(`${API}/api/auth/register`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name:     document.getElementById('regName').value,
+        email:    document.getElementById('regEmail').value,
+        password: document.getElementById('regPassword').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+    localStorage.setItem('sr_token', data.token);
+    localStorage.setItem('sr_user',  JSON.stringify(data.user));
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    setError('registerError', err.message);
+    setLoading(btn, false);
+  }
+}
+
+function fillDemo() {
+  document.getElementById('loginEmail').value    = 'demo@saferoute.in';
+  document.getElementById('loginPassword').value = 'demo123';
+}
+
+// Check URL param
+if (new URLSearchParams(location.search).get('mode') === 'register') showRegister();
+
+// If already logged in, redirect
+if (localStorage.getItem('sr_token')) window.location.href = 'dashboard.html';
+</script>
+</body>
+</html>

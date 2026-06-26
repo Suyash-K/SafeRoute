@@ -1,0 +1,21 @@
+{
+  "model": "GradientBoosting",
+  "mae": 1.223,
+  "r2": 0.988,
+  "n_train": 4800,
+  "n_test": 1200,
+  "n_zones": 34,
+  "feature_importances": {
+    "weighted_score": 0.9948,
+    "min_dist_industrial": 0.0012,
+    "min_dist_moderate": 0.0006,
+    "min_dist_high": 0.0006,
+    "lat": 0.0006,
+    "min_dist_low": 0.0005,
+    "min_dist_safe_hub": 0.0005,
+    "min_dist_critical": 0.0004,
+    "dist_from_centre": 0.0004,
+    "lng": 0.0004
+  },
+  "trained_at": "2026-06-26T18:54:17.611989"
+}
