@@ -99,6 +99,42 @@
       "started_at": "2026-06-26T14:43:08.081Z",
       "completed_at": "2026-06-26T14:43:13.221Z",
       "status": "completed"
+    },
+    {
+      "id": 6,
+      "user_id": 1,
+      "origin": "Dagdusheth Halwai Ganpati Mandir, Chhatrapati Shivaji Maharaj Road, Mehunpura, Sadashiv Peth, Pune, Maharashtra, India",
+      "destination": "YCM Hospital Road, Aksy Society, Sant Tukaram Nagar, Pimpri Colony, Pimpri-Chinchwad, Maharashtra, India",
+      "origin_lat": 18.5164416,
+      "origin_lng": 73.8562506,
+      "dest_lat": 18.6227585,
+      "dest_lng": 73.8188254,
+      "route_type": "safest",
+      "safety_score": 61,
+      "distance_m": 19086,
+      "duration_s": 2567,
+      "encoded_polyline": "wn_pBq`xaM~AAbAGBXBP@Fv@zAd@r@HZ`@rAl@rAJ^PpAgB@sBEoCOaAI}GYg@IUIOKEQMw@wDLmA@eAI_@c@Y]o@o@u@]w@JsAb@KAiA^sExAyG`CKLcEtAe@TiAjA_B`Bs@tAaB~Cq@|@{A`AmAf@}@\\cAVKFIFwBHy@t@Cr@UhAObA_AjFOj@]|Bu@|Ei@vCa@rBWhAm@vBWt@?DyA`C{@~AiD|FcFfIuD~FyExG_@h@@F?BMX}@tAkCpDeAxAuAbByAxBcAhBmF`Jy@pAmAtBsAvBgAlA[l@}@rAm@t@[\\a@V_BbAeBhA]RINaEpCwCjBcCxAgQ~KqTtNeDnByAfA{DhCiChBiBjAm@f@gDrByB|AwHpFaAp@[N_BjAkC~Ac@X{Bx@mC|@}C|@wCx@a@PoFbB}DhAw@TSBmCFqBFSDc@PSLMLQ`@_@hCW~AYxAOZW\\UPaAh@aB~@mAt@kDnBkAl@_Ap@{AnA[XWXSVaAp@yDfDwB~BcOtOm@l@eCpCuGfHwHvIu@v@{FvGeAhA}@tAoBhD{BtEkGxNk@~@mEvFw@lAk@j@iHnGEL_@`@aIpHmB|AOD@FCNGJOHQAOIGM?Mk@Y_BqB{BmCqGoG_@c@KKoCcD_@[uDmDSWQa@EEGK?KFQLIL?P[Ni@ViATuAD}@@yAK{JO}BQiAMm@]_Ao@eAe@m@Ue@[}@Y{@Qq@Mm@AUCc@@iBDyBF{APkBj@{DNgAPgBH}A\\sDHsACcAIy@Mu@Su@g@qAq@oAaBoBw@cAUa@Y}@[_Cm@gGC}AAoCBiGCe@w@cB}BsEsAkDMSa@k@aEeI{FaLmC_FuAcCqCiDcBwAk@a@mAq@wAo@i@JUJy@n@CBmAx@aAx@iD|COBwC`Ck@b@iLtJ}@r@UJyBdBaBlACCQWY_@KEs@M_AKeDWU@g@AED[KgGg@gHw@{Fe@gAQ_I}@cBU}AWDSHcB",
+      "started_at": "2026-06-26T18:22:14.533Z",
+      "completed_at": "2026-06-26T18:22:25.354Z",
+      "status": "completed"
+    },
+    {
+      "id": 7,
+      "user_id": 1,
+      "origin": "Dagdusheth Halwai Ganpati Mandir, Chhatrapati Shivaji Maharaj Road, Mehunpura, Sadashiv Peth, Pune, Maharashtra, India",
+      "destination": "YCM Hospital Road, Aksy Society, Sant Tukaram Nagar, Pimpri Colony, Pimpri-Chinchwad, Maharashtra, India",
+      "origin_lat": 18.5164416,
+      "origin_lng": 73.8562506,
+      "dest_lat": 18.6227585,
+      "dest_lng": 73.8188254,
+      "route_type": "safest",
+      "safety_score": 61,
+      "distance_m": 19086,
+      "duration_s": 2567,
+      "encoded_polyline": "wn_pBq`xaM~AAbAGBXBP@Fv@zAd@r@HZ`@rAl@rAJ^PpAgB@sBEoCOaAI}GYg@IUIOKEQMw@wDLmA@eAI_@c@Y]o@o@u@]w@JsAb@KAiA^sExAyG`CKLcEtAe@TiAjA_B`Bs@tAaB~Cq@|@{A`AmAf@}@\\cAVKFIFwBHy@t@Cr@UhAObA_AjFOj@]|Bu@|Ei@vCa@rBWhAm@vBWt@?DyA`C{@~AiD|FcFfIuD~FyExG_@h@@F?BMX}@tAkCpDeAxAuAbByAxBcAhBmF`Jy@pAmAtBsAvBgAlA[l@}@rAm@t@[\\a@V_BbAeBhA]RINaEpCwCjBcCxAgQ~KqTtNeDnByAfA{DhCiChBiBjAm@f@gDrByB|AwHpFaAp@[N_BjAkC~Ac@X{Bx@mC|@}C|@wCx@a@PoFbB}DhAw@TSBmCFqBFSDc@PSLMLQ`@_@hCW~AYxAOZW\\UPaAh@aB~@mAt@kDnBkAl@_Ap@{AnA[XWXSVaAp@yDfDwB~BcOtOm@l@eCpCuGfHwHvIu@v@{FvGeAhA}@tAoBhD{BtEkGxNk@~@mEvFw@lAk@j@iHnGEL_@`@aIpHmB|AOD@FCNGJOHQAOIGM?Mk@Y_BqB{BmCqGoG_@c@KKoCcD_@[uDmDSWQa@EEGK?KFQLIL?P[Ni@ViATuAD}@@yAK{JO}BQiAMm@]_Ao@eAe@m@Ue@[}@Y{@Qq@Mm@AUCc@@iBDyBF{APkBj@{DNgAPgBH}A\\sDHsACcAIy@Mu@Su@g@qAq@oAaBoBw@cAUa@Y}@[_Cm@gGC}AAoCBiGCe@w@cB}BsEsAkDMSa@k@aEeI{FaLmC_FuAcCqCiDcBwAk@a@mAq@wAo@i@JUJy@n@CBmAx@aAx@iD|COBwC`Ck@b@iLtJ}@r@UJyBdBaBlACCQWY_@KEs@M_AKeDWU@g@AED[KgGg@gHw@{Fe@gAQ_I}@cBU}AWDSHcB",
+      "started_at": "2026-06-27T01:50:00.904Z",
+      "completed_at": "2026-06-27T01:50:09.740Z",
+      "status": "completed"
     }
   ],
   "feedback": [
@@ -115,6 +151,20 @@
       "unsafe_lng": null,
       "unsafe_reason": null,
       "submitted_at": "2026-06-26T14:43:48.520Z"
+    },
+    {
+      "id": 2,
+      "journey_id": 7,
+      "user_id": 1,
+      "overall_rating": 2,
+      "safety_rating": 3,
+      "lighting_rating": null,
+      "comment": null,
+      "felt_unsafe": true,
+      "unsafe_lat": 18.58508,
+      "unsafe_lng": 73.7964,
+      "unsafe_reason": "Poor lighting",
+      "submitted_at": "2026-06-27T01:50:41.828Z"
     }
   ],
   "safety_adjustments": [
@@ -125,12 +175,20 @@
       "adjustment": 1.5,
       "source": "crowdsource",
       "created_at": "2026-06-26T14:43:48.529Z"
+    },
+    {
+      "id": 2,
+      "lat": 18.58508,
+      "lng": 73.7964,
+      "adjustment": -5,
+      "source": "crowdsource",
+      "created_at": "2026-06-27T01:50:41.832Z"
     }
   ],
   "_counters": {
     "users": 1,
-    "journeys": 5,
-    "feedback": 1,
-    "adjustments": 1
+    "journeys": 7,
+    "feedback": 2,
+    "adjustments": 2
   }
 }

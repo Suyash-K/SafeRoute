@@ -180,6 +180,20 @@
   <div class="spinner"></div>
 </div>
 
+<!-- ── Map-marking banner (replaces modal while user pins a spot) ── -->
+<div id="markingBanner" style="
+  display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  z-index:9990; background:var(--surface); border:1px solid rgba(239,68,68,.5);
+  border-radius:10px; padding:.7rem 1.25rem;
+  align-items:center; gap:.85rem; box-shadow:var(--shadow);
+  font-size:.85rem; color:var(--text); white-space:nowrap;">
+  <i class="fas fa-crosshairs" style="color:var(--red);font-size:1.1rem"></i>
+  <span>Click anywhere on the map to pin the unsafe location</span>
+  <button class="btn btn-sm btn-ghost" onclick="cancelMarking()" style="padding:.3rem .7rem">
+    <i class="fas fa-xmark"></i> Cancel
+  </button>
+</div>
+
 <!-- ── Feedback modal ─────────────────────────────────────────── -->
 <div class="modal-overlay" id="feedbackOverlay">
   <div class="modal">
@@ -253,18 +267,19 @@ const API_BASE     = '';   // same origin
 // ── State ─────────────────────────────────────────────────────────
 let map, heatmapLayer, directionsService, directionsRenderer;
 let originAC, destAC;
-let safetyData     = null;
-let selectedMode   = 'fastest';
-let scoredRoutes   = {};
-let activeJourney  = null;
-let activeJourneyId= null;
-let fb             = { overall: 0, safety: 0 };
-let markingUnsafe  = false;
-let unsafeMarker   = null;
-let accidentMarkers= [];
-let zoneMarkers    = [];
-let womenMarkers   = [];
-let layers         = { accidents: false, zones: false, women: false };
+let safetyData        = null;
+let selectedMode      = 'fastest';
+let scoredRoutes      = {};
+let fullDirectionsResult = null;   // stores raw DirectionsResult from Google
+let activeJourney     = null;
+let activeJourneyId   = null;
+let fb                = { overall: 0, safety: 0 };
+let markingUnsafe     = false;
+let unsafeMarker      = null;
+let accidentMarkers   = [];
+let zoneMarkers       = [];
+let womenMarkers      = [];
+let layers            = { accidents: false, zones: false, women: false };
 
 const user  = JSON.parse(localStorage.getItem('sr_user')  || 'null');
 const token = localStorage.getItem('sr_token') || '';
@@ -410,7 +425,7 @@ async function initMap() {
   originAC = new google.maps.places.Autocomplete(document.getElementById('originInput'), acOpts);
   destAC   = new google.maps.places.Autocomplete(document.getElementById('destInput'),   acOpts);
 
-  // Click on map to mark unsafe spot
+  // Click on map to mark unsafe spot — hides modal, lets user pick location
   map.addListener('click', e => {
     if (!markingUnsafe) return;
     document.getElementById('unsafeLat').value = e.latLng.lat().toFixed(5);
@@ -418,9 +433,15 @@ async function initMap() {
     if (unsafeMarker) unsafeMarker.setMap(null);
     unsafeMarker = new google.maps.Marker({
       position: e.latLng, map,
-      icon: { path: google.maps.SymbolPath.CIRCLE, scale:8, fillColor:'#ef4444', fillOpacity:1, strokeColor:'#fff', strokeWeight:2 }
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8,
+              fillColor: '#ef4444', fillOpacity: 1,
+              strokeColor: '#fff', strokeWeight: 2 }
     });
-    toast('Unsafe location marked on map', 'warning');
+    // Restore feedback modal after pin placed
+    markingUnsafe = false;
+    document.getElementById('markingBanner').style.display = 'none';
+    document.getElementById('feedbackOverlay').classList.add('show');
+    toast('Location pinned — complete your feedback below', 'success');
   });
 
   renderUserChip();
@@ -606,7 +627,10 @@ async function calculateRoutes() {
   if (!origin || !dest) { toast('Enter both a starting point and destination', 'warning'); return; }
 
   loading(true);
-  directionsRenderer.setDirections({ routes: [] });
+  // Clear previous route safely
+  directionsRenderer.setMap(null);
+  directionsRenderer.setMap(map);
+  fullDirectionsResult = null;
   document.getElementById('routeResultsSection').style.display = 'none';
   document.getElementById('routeModeSection').style.display = 'none';
 
@@ -623,6 +647,8 @@ async function calculateRoutes() {
         else reject(new Error('No route found: ' + status));
       });
     });
+
+    fullDirectionsResult = result;   // ← store for displayRoute
 
     const routes = result.routes;
     const scored = routes.map((r, idx) => {
@@ -736,10 +762,11 @@ function selectMode(mode) {
 }
 
 function displayRoute(scored) {
-  if (!scored) return;
-  const r = new google.maps.DirectionsResult();
-  directionsRenderer.setDirections({ routes: [scored.route], geocoded_waypoints: [] });
-  directionsRenderer.setRouteIndex(0);
+  if (!scored || !fullDirectionsResult) return;
+  // setDirections needs the full DirectionsResult (not a partial object)
+  // setRouteIndex then highlights the chosen alternative
+  directionsRenderer.setDirections(fullDirectionsResult);
+  directionsRenderer.setRouteIndex(scored.routeIndex);
 }
 
 // ── Journey ───────────────────────────────────────────────────────
@@ -807,7 +834,10 @@ async function endJourney() {
 
 function cancelJourney() {
   activeJourney = null; activeJourneyId = null;
-  directionsRenderer.setDirections({ routes: [] });
+  fullDirectionsResult = null;
+  // Remove then re-attach renderer to clear polyline without errors
+  directionsRenderer.setMap(null);
+  directionsRenderer.setMap(map);
   resetJourneyUI();
   toast('Journey cancelled', 'info');
 }
@@ -838,8 +868,23 @@ function setStars(type, val) {
 function toggleUnsafeDetails() {
   const show = document.getElementById('feltUnsafe').checked;
   document.getElementById('unsafeDetails').classList.toggle('show', show);
-  markingUnsafe = show;
-  if (show) toast('Click on the map to mark the unsafe location', 'info', 4000);
+  if (show) {
+    // Enter marking mode: hide the modal, show a slim banner so map is fully clickable
+    document.getElementById('feedbackOverlay').classList.remove('show');
+    document.getElementById('markingBanner').style.display = 'flex';
+    markingUnsafe = true;
+  } else {
+    markingUnsafe = false;
+    document.getElementById('markingBanner').style.display = 'none';
+  }
+}
+
+function cancelMarking() {
+  markingUnsafe = false;
+  document.getElementById('feltUnsafe').checked = false;
+  document.getElementById('unsafeDetails').classList.remove('show');
+  document.getElementById('markingBanner').style.display = 'none';
+  document.getElementById('feedbackOverlay').classList.add('show');
 }
 
 async function submitFeedback() {
